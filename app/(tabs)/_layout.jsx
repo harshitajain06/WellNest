@@ -11,11 +11,14 @@ import AboutPage from './AboutPage'; // New About Page
 import RegisterScreen from './index';
 import LoginScreen from './Login';
 import HabitAddPage from './HabitAddPage'; // Habit Add Page
+import ForumPage from './ForumPage'; // Add this import at the top
 import GratitudeList from './GratitudeList'; // New Gratitude List Page
 import TodaysGoals from './TodaysGoals'; // New Today's Goals Page
 import DailyReflection from './DailyReflection'; // New Daily Reflection Page
 import FreeJournaling from './FreeJournaling'; // New Free Journaling Page
 import ABCDEMethod from './ABCDEMethod'; // New ABCDE Method Page
+import CreatePost from './CreatePost'; // New Create Post Page
+import PostDetail from './PostDetail'; // New Post Detail Page
 import JournalEntries from './JournalEntries';
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from '../../hooks/useColorScheme';
@@ -52,6 +55,8 @@ const BottomTabs = () => {
             iconName = focused ? 'school' : 'school-outline';
           } else if (route.name === 'About') {
             iconName = focused ? 'information-circle' : 'information-circle-outline';
+          }else if (route.name === 'Forum') {
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';  // Forum icon
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -65,11 +70,11 @@ const BottomTabs = () => {
       />
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Calendar" component={CalendarPage} />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Videos"
         component={VideosPage}
         options={{ title: 'Videos' }}
-      />
+      /> */}
       <Tab.Screen
         name="Journal"
         component={JournalPage}
@@ -79,6 +84,11 @@ const BottomTabs = () => {
         name="Expert Videos"
         component={ExpertVideosPage} // New Expert Videos Component
         options={{ title: 'Expert Videos' }}
+      />
+      <Tab.Screen
+        name="Forum"
+        component={ForumPage}
+        options={{ title: 'Forum' }}
       />
     
     </Tab.Navigator>
@@ -113,6 +123,9 @@ export default function StackLayout() {
       <Stack.Screen name="FreeJournaling" component={FreeJournaling} />
       <Stack.Screen name="ABCDEMethod" component={ABCDEMethod} />
       <Stack.Screen name="JournalEntries" component={JournalEntries} />
+      <Stack.Screen name="ForumPage" component={ForumPage} />
+<Stack.Screen name="CreatePost" component={CreatePost} />
+<Stack.Screen name="PostDetail" component={PostDetail} />
     </Stack.Navigator>
   );
 }

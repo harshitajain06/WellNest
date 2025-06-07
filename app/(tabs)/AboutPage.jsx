@@ -64,6 +64,7 @@ export default function AboutPage() {
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
               <View style={styles.affirmationCard}>
+                
                 <Text style={styles.affirmationText}>{item}</Text>
               </View>
             )}

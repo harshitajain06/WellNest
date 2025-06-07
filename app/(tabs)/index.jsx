@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Image } from 'react-native';
-import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
+} from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -25,9 +40,26 @@ const RegisterScreen = () => {
   }, [user]);
 
   const handleSignUp = async () => {
+    // Basic validation
+    if (!name.trim()) {
+      Alert.alert('Error', 'Please enter your name');
+      return;
+    }
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email');
+      return;
+    }
+    if (!password.trim()) {
+      Alert.alert('Error', 'Please enter your password');
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
+      // Update the display name in Firebase Auth profile
+      await updateProfile(user, { displayName: name });
 
       // Send email verification
       await sendEmailVerification(user);
@@ -76,73 +108,76 @@ const RegisterScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Logo */}
-      <Image source={logo} style={styles.logo} resizeMode="contain" />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        {/* Logo */}
+        <Image source={logo} style={styles.logo} resizeMode="contain" />
 
-      <Text style={styles.title}>Sign Up</Text>
+        <Text style={styles.title}>Sign Up</Text>
 
-      <TextInput
-        style={[
-          styles.input,
-          { borderColor: isFocused === 'name' ? '#007BFF' : '#ccc' }
-        ]}
-        placeholder="Name"
-        placeholderTextColor="#666"
-        value={name}
-        onChangeText={setName}
-        onFocus={() => setIsFocused('name')}
-        onBlur={() => setIsFocused(null)}
-      />
-      <TextInput
-        style={[
-          styles.input,
-          { borderColor: isFocused === 'email' ? '#007BFF' : '#ccc' }
-        ]}
-        placeholder="Email"
-        placeholderTextColor="#666"
-        value={email}
-        onChangeText={setEmail}
-        onFocus={() => setIsFocused('email')}
-        onBlur={() => setIsFocused(null)}
-      />
-      <TextInput
-        style={[
-          styles.input,
-          { borderColor: isFocused === 'password' ? '#007BFF' : '#ccc' }
-        ]}
-        placeholder="Password"
-        placeholderTextColor="#666"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        onFocus={() => setIsFocused('password')}
-        onBlur={() => setIsFocused(null)}
-      />
+        <TextInput
+          style={[styles.input, { borderColor: isFocused === 'name' ? '#007BFF' : '#ccc' }]}
+          placeholder="Name"
+          placeholderTextColor="#666"
+          value={name}
+          onChangeText={setName}
+          onFocus={() => setIsFocused('name')}
+          onBlur={() => setIsFocused(null)}
+          autoCapitalize="words"
+          returnKeyType="next"
+        />
+        <TextInput
+          style={[styles.input, { borderColor: isFocused === 'email' ? '#007BFF' : '#ccc' }]}
+          placeholder="Email"
+          placeholderTextColor="#666"
+          value={email}
+          onChangeText={setEmail}
+          onFocus={() => setIsFocused('email')}
+          onBlur={() => setIsFocused(null)}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          returnKeyType="next"
+        />
+        <TextInput
+          style={[styles.input, { borderColor: isFocused === 'password' ? '#007BFF' : '#ccc' }]}
+          placeholder="Password"
+          placeholderTextColor="#666"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          onFocus={() => setIsFocused('password')}
+          onBlur={() => setIsFocused(null)}
+          returnKeyType="done"
+        />
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleSignUp} style={styles.button}>
-          <Text style={styles.buttonText}>Register</Text>
-        </TouchableOpacity>
-
-        <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.loginLink}>Login</Text>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity onPress={handleSignUp} style={styles.button}>
+            <Text style={styles.buttonText}>Register</Text>
           </TouchableOpacity>
+
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.loginLink}>Login</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <Toast />
-    </View>
+        <Toast />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingVertical: 40,
   },
   logo: {
     width: 300, // Adjust as needed
@@ -154,7 +189,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#567396',
     marginBottom: 30,
-    marginTop: '-140'
+    marginTop: '-140',
   },
   input: {
     width: '100%',
