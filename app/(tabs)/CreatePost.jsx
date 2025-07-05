@@ -31,24 +31,35 @@ export default function CreatePost() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer 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`,
+          Authorization: `Bearer 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`,
         },
         body: JSON.stringify({
           model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: `You are a sentiment analysis assistant. 
-              Analyze the following text and return a JSON object with three properties:
-              - category: one of "Positive", "Neutral", "Negative"
-              - score: a sentiment score between -1 (very negative) and +1 (very positive), don't take 0
-              - explanation: a short explanation of your classification.
-              Example response: 
-              {
-                "category": "Positive",
-                "score": 0.8,
-                "explanation": "The text expresses optimism and happiness."
-              }` },
-            { role: 'user', content: text }
-          ],
+messages: [
+  {
+    role: 'system',
+    content: `You are a sentiment analysis assistant. 
+Analyze the following text and return a JSON object with four properties:
+- category: one of "Positive", "Neutral", "Negative"
+- score: a sentiment score between -1 (very negative) and +1 (very positive), don't take 0
+- explanation: a short explanation of your classification
+- suggestions: a list of 1–3 actionable suggestions to overcome or improve the situation described in the text, especially if the sentiment is negative or neutral
+
+Example response:
+{
+  "category": "Negative",
+  "score": -0.7,
+  "explanation": "The text expresses frustration and disappointment.",
+  "suggestions": [
+    "Try to identify the root cause of the issue and address it directly.",
+    "Seek support from colleagues or a mentor to gain perspective.",
+    "Consider taking a short break to recharge and refocus."
+  ]
+}`
+  },
+  { role: 'user', content: text }
+]
+
         }),
       });
 

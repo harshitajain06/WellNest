@@ -3,7 +3,6 @@ import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 
-// Optional: colors and icons based on sentiment category
 const sentimentColors = {
   Positive: '#4CAF50',
   Neutral: '#9E9E9E',
@@ -19,10 +18,9 @@ const sentimentIcons = {
 export default function PostDetail({ route }) {
   const { post } = route.params;
 
-  // Safe fallback if sentiment is missing or malformed
   const sentiment = typeof post.sentiment === 'string'
-    ? { category: post.sentiment, score: null, explanation: '' }
-    : post.sentiment || { category: 'Unknown', score: null, explanation: '' };
+    ? { category: post.sentiment, score: null, explanation: '', suggestions: [] }
+    : post.sentiment || { category: 'Unknown', score: null, explanation: '', suggestions: [] };
 
   const color = sentimentColors[sentiment.category] || '#fff';
   const iconName = sentimentIcons[sentiment.category] || 'help-outline';
@@ -46,6 +44,17 @@ export default function PostDetail({ route }) {
           {sentiment.explanation ? (
             <Text style={styles.sentimentExplanation}>{sentiment.explanation}</Text>
           ) : null}
+
+          {sentiment.suggestions && sentiment.suggestions.length > 0 && (
+            <View style={styles.suggestionsContainer}>
+              <Text style={styles.suggestionsTitle}>Suggestions:</Text>
+              {sentiment.suggestions.map((item, index) => (
+                <Text key={index} style={styles.suggestionItem}>
+                  • {item}
+                </Text>
+              ))}
+            </View>
+          )}
         </View>
       </View>
     </LinearGradient>
@@ -72,7 +81,7 @@ const styles = StyleSheet.create({
   },
   sentimentContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: 12,
     padding: 15,
@@ -89,5 +98,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontStyle: 'italic',
     color: '#ccc',
+    marginTop: 4,
+  },
+  suggestionsContainer: {
+    marginTop: 12,
+  },
+  suggestionsTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  suggestionItem: {
+    fontSize: 13,
+    color: '#eee',
+    marginLeft: 8,
   },
 });

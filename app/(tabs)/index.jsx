@@ -16,14 +16,14 @@ import {
   sendEmailVerification,
   updateProfile,
 } from 'firebase/auth';
+import { setDoc, doc } from 'firebase/firestore'; // Add Firestore write
 import { auth } from '../../config/firebase';
+import { db } from '../../config/firebase'; // Ensure this path is correct
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import withGradient from '../../components/withGradient';
-
-// Import the logo
-import logo from '../../assets/images/Logo.png'; // Ensure this path is correct
+import logo from '../../assets/images/Logo.png'; // App logo
 
 const RegisterScreen = () => {
   const [user, loading, error] = useAuthState(auth);
@@ -40,7 +40,6 @@ const RegisterScreen = () => {
   }, [user]);
 
   const handleSignUp = async () => {
-    // Basic validation
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter your name');
       return;
@@ -58,23 +57,27 @@ const RegisterScreen = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Update the display name in Firebase Auth profile
+      // Update Auth Profile
       await updateProfile(user, { displayName: name });
+
+      // ✅ Save user to Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        displayName: name,
+        email: email,
+        createdAt: new Date(),
+      });
 
       // Send email verification
       await sendEmailVerification(user);
 
-      // Show success alert
       Alert.alert('Success', 'Account created successfully! Please verify your email.');
 
-      // Show success toast
       Toast.show({
         type: 'success',
         text1: 'Account created successfully!',
         text2: 'Please verify your email.',
       });
 
-      // Navigate to login screen
       navigation.navigate('Login');
     } catch (error) {
       let errorMessage;
@@ -95,10 +98,8 @@ const RegisterScreen = () => {
           errorMessage = 'An unknown error occurred. Please try again later.';
       }
 
-      // Show error alert
       Alert.alert('Error', errorMessage);
 
-      // Show error toast
       Toast.show({
         type: 'error',
         text1: 'Error',
@@ -113,9 +114,7 @@ const RegisterScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        {/* Logo */}
         <Image source={logo} style={styles.logo} resizeMode="contain" />
-
         <Text style={styles.title}>Sign Up</Text>
 
         <TextInput
@@ -179,17 +178,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 40,
   },
-  logo: {
-    width: 300, // Adjust as needed
-    height: 300, // Adjust as needed
-    marginBottom: 20, // Space below the logo
+logo: {
+    width: 150, // Adjust as needed
+    height: 150, // Adjust as needed
+    marginBottom: 10,   
   },
   title: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#567396',
+    color: '#007BFF',
     marginBottom: 30,
-    marginTop: '-140',
   },
   input: {
     width: '100%',

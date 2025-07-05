@@ -128,14 +128,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logo: {
-    width: 300, // Adjust as needed
-    height: 300, // Adjust as needed
-   
+    width: 150, // Adjust as needed
+    height: 150, // Adjust as needed
+    marginBottom: 140,   
   },
   title: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#567396',
+    color: '#007BFF',
     marginBottom: 30,
     marginTop: '-120'
   },
