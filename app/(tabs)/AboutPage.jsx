@@ -37,8 +37,7 @@ export default function AboutPage() {
             <Text style={styles.featureItem}>📝 Free journaling and guided reflection exercises</Text>
             <Text style={styles.featureItem}>🎥 Expert videos to inspire and educate</Text>
             <Text style={styles.featureItem}>📅 A user-friendly calendar for better planning</Text>
-            <Text style={styles.featureItem}>📊 Progress tracking: Log daily moods and receive AI-generated suggestions based on emotional trends</Text>
-            <Text style={styles.featureItem}>🧠 24/7 Live Support: An AI therapist chatbot offering immediate, discrete emotional support</Text>
+            <Text style={styles.featureItem}>📊 Progress Tracking: Users can log their daily moods by selecting how they feel, with the option to track emotions using emojis for a quick and visual overview.</Text>
             <Text style={styles.featureItem}>👥 Community-driven forum: AI-powered sentiment analysis detects caregiver burnout and delivers personalized support recommendations</Text>
           </View>
 
