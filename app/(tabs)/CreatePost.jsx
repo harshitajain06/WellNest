@@ -31,7 +31,7 @@ export default function CreatePost() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer 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`,
+          Authorization: `Bearer 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`,
         },
         body: JSON.stringify({
           model: 'gpt-3.5-turbo',
