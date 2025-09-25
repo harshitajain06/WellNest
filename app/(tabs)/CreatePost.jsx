@@ -25,7 +25,7 @@ const CreatePost = ({ navigation }) => {
   // Function to fetch API key from Firestore
   const fetchApiKey = async () => {
     try {
-      const apiKeyDoc = await getDoc(doc(db, 'config', 'openai'));
+      const apiKeyDoc = await getDoc(doc(db, 'configLasya', 'openai'));
       if (apiKeyDoc.exists()) {
         const data = apiKeyDoc.data();
         setApiKey(data.apiKey);
