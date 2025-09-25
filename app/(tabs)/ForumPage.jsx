@@ -606,8 +606,9 @@ const ForumPage = ({ navigation }) => {
     );
   }
 
-  return (
-    <View style={styles.container}>
+  // Header component for FlatList
+  const ListHeader = () => (
+    <View>
       {/* Header Section */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
@@ -640,7 +641,11 @@ const ForumPage = ({ navigation }) => {
           <Text style={styles.statText}>Active</Text>
         </View>
       </View>
+    </View>
+  );
 
+  return (
+    <View style={styles.container}>
       {/* Posts List */}
       <FlatList
         data={posts}
@@ -651,6 +656,7 @@ const ForumPage = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         refreshing={refreshing}
         onRefresh={onRefresh}
+        ListHeaderComponent={ListHeader}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name="chatbubbles-outline" size={64} color="#BDC3C7" />
@@ -828,8 +834,6 @@ export default withGradient(ForumPage);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 10,
   },
   flatListContainer: {
     flex: 1,
@@ -848,7 +852,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: 'rgba(79, 39, 128, 0.9)',
-    paddingTop: 10,
+    paddingTop: 50,
     paddingBottom: 30,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
@@ -921,6 +925,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 100,
+    paddingHorizontal: 20,
     flexGrow: 1,
   },
   postContainer: {

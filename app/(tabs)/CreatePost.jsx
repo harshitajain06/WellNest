@@ -165,7 +165,18 @@ Example response:
     setIsAnalyzing(true);
 
     try {
-      // Create post first, then analyze sentiment
+      // Try sentiment analysis first
+      let sentimentResult = null;
+      try {
+        console.log('Starting sentiment analysis for content:', content);
+        sentimentResult = await getSentiment(content);
+        console.log('Sentiment analysis result:', sentimentResult);
+      } catch (sentimentError) {
+        console.log('Sentiment analysis failed:', sentimentError);
+        // Continue without sentiment data
+      }
+
+      // Create post with sentiment data
       const postData = {
         title: title.trim(),
         content: content.trim(),
@@ -175,22 +186,19 @@ Example response:
         authorName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Anonymous',
         supportCount: 0,
         commentCount: 0,
+        sentiment: sentimentResult || null,
       };
 
       // Add post to Firestore
       const docRef = await addDoc(collection(db, 'forumPosts'), postData);
       console.log('Post created successfully with ID:', docRef.id);
 
-      // Try sentiment analysis (optional)
-      try {
-        console.log('Starting sentiment analysis for content:', content);
-        const sentiment = await getSentiment(content);
-        console.log('Sentiment analysis result:', sentiment);
-        setSentimentData(sentiment);
+      // Show sentiment modal if analysis was successful
+      if (sentimentResult) {
+        setSentimentData(sentimentResult);
         setIsAnalyzing(false);
         setModalVisible(true);
-      } catch (sentimentError) {
-        console.log('Sentiment analysis failed, but post was created:', sentimentError);
+      } else {
         // Show success message without sentiment analysis
         Alert.alert('Success!', 'Your post has been shared successfully! 🎉', [
           {
@@ -235,6 +243,13 @@ Example response:
     <View style={styles.container}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        style={styles.scrollView}
+        bounces={true}
+        alwaysBounceVertical={false}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
+        scrollEventThrottle={16}
       >
         {/* Calendar-style Header */}
         <View style={styles.header}>
@@ -341,18 +356,6 @@ Example response:
               )}
       </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.previewButton}
-              onPress={() => {
-                if (title.trim() && content.trim()) {
-                  Alert.alert('Post Preview', `Title: ${title}\n\nContent: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`);
-                }
-              }}
-              disabled={!title.trim() || !content.trim()}
-            >
-              <Ionicons name="eye" size={20} color="#4F2780" />
-              <Text style={styles.previewButtonText}>Preview Post</Text>
-            </TouchableOpacity>
           </View>
         </View>
         
@@ -563,6 +566,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
+    minHeight: '100vh',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    minHeight: '100vh',
+    paddingBottom: 50,
   },
   
   // Header Styles - Calendar Theme
@@ -752,29 +764,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 8,
   },
-  previewButton: {
-    backgroundColor: 'rgba(79, 39, 128, 0.1)',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 20,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(79, 39, 128, 0.3)',
-  },
-  previewButtonText: {
-    color: '#4F2780',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   extraSpacing: {
-    height: 150,
+    height: 300,
   },
 
   // Enhanced Modal Styles
