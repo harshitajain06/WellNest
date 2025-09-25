@@ -7,6 +7,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import {
     ActivityIndicator,
     Alert,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -16,6 +17,8 @@ import {
 import { Calendar } from 'react-native-calendars';
 import withGradient from '../../components/withGradient';
 import { auth, db } from '../../config/firebase';
+
+const isWeb = Platform.OS === 'web';
 
 const CalendarPage = () => {
   const navigation = useNavigation();
@@ -84,7 +87,13 @@ const CalendarPage = () => {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.container} 
+      showsVerticalScrollIndicator={false}
+      {...(isWeb && {
+        contentContainerStyle: styles.webScrollContent
+      })}
+    >
       {/* Header Section */}
       <View style={styles.header}>
         <Text style={styles.title}>📅 Calendar</Text>
@@ -157,6 +166,9 @@ const CalendarPage = () => {
           <Text style={styles.legendText}>Today</Text>
         </View>
       </View>
+      
+      {/* Extra spacing for better scrolling */}
+      <View style={styles.extraSpacing} />
     </ScrollView>
   );
 };
@@ -165,6 +177,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
+    ...(isWeb && {
+      minHeight: '100vh',
+      maxWidth: 1200,
+      alignSelf: 'center',
+      width: '100%',
+    }),
+  },
+  webScrollContent: {
+    minHeight: '100vh',
+    paddingBottom: 80,
+  },
+  extraSpacing: {
+    height: 150,
+    ...(isWeb && {
+      height: 100,
+    }),
   },
   header: {
     backgroundColor: 'rgba(79, 39, 128, 0.9)',
@@ -198,6 +226,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 20,
     marginBottom: 20,
+    ...(isWeb && {
+      maxWidth: 800,
+      alignSelf: 'center',
+      width: '100%',
+    }),
   },
   calendarContainer: {
     backgroundColor: 'rgba(255,255,255,0.9)',
@@ -208,6 +241,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
+    ...(isWeb && {
+      transition: 'all 0.2s ease',
+      ':hover': {
+        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+      },
+    }),
   },
   calendar: {
     borderRadius: 15,
@@ -216,6 +255,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
     gap: 12,
+    ...(isWeb && {
+      maxWidth: 600,
+      alignSelf: 'center',
+      width: '100%',
+    }),
   },
   addButton: {
     backgroundColor: '#4F2780',
@@ -230,6 +274,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 5,
+    ...(isWeb && {
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      ':hover': {
+        backgroundColor: '#3a1f5c',
+        transform: 'translateY(-2px)',
+        boxShadow: '0 6px 20px rgba(79, 39, 128, 0.3)',
+      },
+    }),
   },
   addButtonText: {
     color: '#fff',
@@ -247,6 +300,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(79, 39, 128, 0.3)',
+    ...(isWeb && {
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      ':hover': {
+        backgroundColor: 'rgba(79, 39, 128, 0.2)',
+        borderColor: 'rgba(79, 39, 128, 0.5)',
+        transform: 'translateY(-1px)',
+      },
+    }),
   },
   quickAddButtonText: {
     color: '#4F2780',
@@ -257,7 +319,7 @@ const styles = StyleSheet.create({
   legendSection: {
     backgroundColor: 'rgba(255,255,255,0.9)',
     marginHorizontal: 20,
-    marginBottom: 30,
+    marginBottom: 50,
     padding: 20,
     borderRadius: 16,
     shadowColor: '#000',
@@ -265,6 +327,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    ...(isWeb && {
+      marginBottom: 70,
+    }),
   },
   legendTitle: {
     fontSize: 18,

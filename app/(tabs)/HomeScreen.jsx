@@ -1,28 +1,29 @@
 // src/tabs/HomeScreen.jsx
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { signOut } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import React, { useCallback, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    FlatList,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  FlatList,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import withGradient from '../../components/withGradient';
 import { auth, db } from "../../config/firebase";
 
 const { width } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -163,23 +164,6 @@ const HomeScreen = () => {
   };
   
 
-  const handleLogout = () => {
-    Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: () => {
-          signOut(auth)
-            .then(() => navigation.replace("Login"))
-            .catch((err) => {
-              console.error("Logout Error:", err);
-              Alert.alert("Error", "Failed to logout.");
-            });
-        },
-      },
-    ]);
-  };
 
   if (loading || loadingHabits) {
     return (
@@ -198,7 +182,17 @@ const HomeScreen = () => {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.container} 
+      showsVerticalScrollIndicator={false}
+      bounces={true}
+      alwaysBounceVertical={false}
+      keyboardShouldPersistTaps="handled"
+      {...(isWeb && {
+        contentContainerStyle: styles.webScrollContent,
+        style: [styles.container, styles.webScrollView]
+      })}
+    >
       {/* Header Section */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
@@ -206,9 +200,6 @@ const HomeScreen = () => {
             <Text style={styles.greeting}>Good {getTimeOfDay()}</Text>
             <Text style={styles.userName}>{user?.displayName || user?.email?.split('@')[0] || 'User'}</Text>
           </View>
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-            <Ionicons name="log-out-outline" size={24} color="#fff" />
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -306,6 +297,9 @@ const HomeScreen = () => {
           )}
         </View>
       </Modal>
+      
+      {/* Extra spacing for better scrolling */}
+      <View style={styles.extraSpacing} />
     </ScrollView>
   );
 };
@@ -314,6 +308,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
+    ...(isWeb && {
+      minHeight: '100vh',
+      maxWidth: 1200,
+      alignSelf: 'center',
+      width: '100%',
+    }),
+  },
+  webScrollView: {
+    height: '100vh',
+    overflow: 'auto',
+  },
+  webScrollContent: {
+    minHeight: '100vh',
+    paddingBottom: 80,
+    flexGrow: 1,
+  },
+  extraSpacing: {
+    height: 150,
+    ...(isWeb && {
+      height: 100,
+    }),
   },
   header: {
     backgroundColor: 'rgba(79, 39, 128, 0.9)',
@@ -330,7 +345,7 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   greeting: {
@@ -344,19 +359,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 4,
   },
-  logoutButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    padding: 12,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-  },
   statsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
     marginTop: -15,
     marginBottom: 20,
     gap: 15,
+    ...(isWeb && {
+      maxWidth: 600,
+      alignSelf: 'center',
+      width: '100%',
+    }),
   },
   statCard: {
     flex: 1,
@@ -371,6 +384,14 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderWidth: 1,
     borderColor: 'rgba(79, 39, 128, 0.1)',
+    ...(isWeb && {
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      ':hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
+      },
+    }),
   },
   statIcon: {
     backgroundColor: 'rgba(79, 39, 128, 0.1)',
@@ -392,7 +413,13 @@ const styles = StyleSheet.create({
   },
   calendarSection: {
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 40,
+    ...(isWeb && {
+      maxWidth: 800,
+      alignSelf: 'center',
+      width: '100%',
+      marginBottom: 60,
+    }),
   },
   sectionTitle: {
     fontSize: 20,
@@ -410,6 +437,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
+    ...(isWeb && {
+      transition: 'all 0.2s ease',
+      ':hover': {
+        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+      },
+    }),
   },
   calendar: {
     borderRadius: 15,
