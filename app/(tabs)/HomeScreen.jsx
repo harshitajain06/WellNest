@@ -1,24 +1,28 @@
 // src/tabs/HomeScreen.jsx
-import React, { useEffect, useState, useCallback } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { signOut } from "firebase/auth";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import React, { useCallback, useState } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Modal,
-  FlatList,
-  TouchableWithoutFeedback,
-  TouchableOpacity,
-  Alert,
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    FlatList,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { db, auth } from "../../config/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { signOut } from "firebase/auth";
-import { Ionicons } from "@expo/vector-icons";
 import withGradient from '../../components/withGradient';
+import { auth, db } from "../../config/firebase";
+
+const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -29,6 +33,15 @@ const HomeScreen = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [habitsForSelectedDate, setHabitsForSelectedDate] = useState([]);
+  const [todayHabitsCount, setTodayHabitsCount] = useState(0);
+  const [totalHabitsCount, setTotalHabitsCount] = useState(0);
+
+  const getTimeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Morning';
+    if (hour < 17) return 'Afternoon';
+    return 'Evening';
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -49,6 +62,13 @@ const HomeScreen = () => {
         ...doc.data(),
       }));
       setHabits(habitsData);
+      setTotalHabitsCount(habitsData.length);
+      
+      // Count today's habits
+      const today = new Date().toISOString().split("T")[0];
+      const todayHabits = habitsData.filter(habit => habit.date === today);
+      setTodayHabitsCount(todayHabits.length);
+      
       markHabitDates(habitsData);
     } catch (err) {
       console.error("Error fetching habits: ", err);
@@ -112,20 +132,32 @@ const HomeScreen = () => {
 
   const renderHabit = ({ item }) => {
     const formattedTime = item.time
-      ? new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      ? new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : "Not specified";
   
     const formattedEndDate = item.endDate
-      ? new Date(item.endDate).toLocaleDateString([], { day: '2-digit', month: 'long', year: 'numeric' })
+      ? new Date(item.endDate).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })
       : "No end date";
   
     return (
-      <View style={styles.habitItem}>
-        <Text style={styles.habitText}>Habit: {item.habit}</Text>
-        <Text style={styles.habitDetail}>Time: {formattedTime}</Text>
-        <Text style={styles.habitDetail}>Repeat: {item.repeat || "No repeat"}</Text>
-        <Text style={styles.habitDetail}>End Date: {formattedEndDate}</Text>
-        <Text style={styles.habitDetail}>Smiley: {item.smiley || "🙂"}</Text>
+      <View style={styles.habitCard}>
+        <View style={styles.habitHeader}>
+          <Text style={styles.habitEmoji}>{item.smiley || "🙂"}</Text>
+          <View style={styles.habitInfo}>
+            <Text style={styles.habitTitle}>{item.habit}</Text>
+            <Text style={styles.habitTime}>⏰ {formattedTime}</Text>
+          </View>
+        </View>
+        <View style={styles.habitDetails}>
+          <View style={styles.habitDetailRow}>
+            <Ionicons name="repeat-outline" size={16} color="#666" />
+            <Text style={styles.habitDetailText}>{item.repeat || "No repeat"}</Text>
+          </View>
+          <View style={styles.habitDetailRow}>
+            <Ionicons name="calendar-outline" size={16} color="#666" />
+            <Text style={styles.habitDetailText}>{formattedEndDate}</Text>
+          </View>
+        </View>
       </View>
     );
   };
@@ -166,38 +198,80 @@ const HomeScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Header Section */}
       <View style={styles.header}>
-        <Text style={styles.title}>Welcome</Text>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={24} color="#007BFF" />
-        </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.greeting}>Good {getTimeOfDay()}</Text>
+            <Text style={styles.userName}>{user?.displayName || user?.email?.split('@')[0] || 'User'}</Text>
+          </View>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
-      <Calendar
-        onDayPress={onDayPress}
-        markedDates={{
-          ...markedDates,
-          [selectedDate]: {
-            selected: true,
-            selectedColor: "#007BFF",
-            dots: markedDates[selectedDate]?.dots || [],
-          },
-          [new Date().toISOString().split("T")[0]]: {
-            ...(markedDates[new Date().toISOString().split("T")[0]] || {}),
-            today: true,
-            selected: true,
-            selectedColor: "#FFD700",
-            dots: markedDates[new Date().toISOString().split("T")[0]]?.dots || [],
-          },
-        }}
-        markingType={"multi-dot"}
-        style={styles.calendar}
-        theme={{
-          selectedDayBackgroundColor: "#007BFF",
-          todayTextColor: "#FF6347",
-          arrowColor: "#007BFF",
-        }}
-      />
+
+      {/* Stats Cards */}
+      <View style={styles.statsContainer}>
+        <View style={styles.statCard}>
+          <View style={styles.statIcon}>
+            <Ionicons name="today-outline" size={24} color="#4F2780" />
+          </View>
+          <Text style={styles.statNumber}>{todayHabitsCount}</Text>
+          <Text style={styles.statLabel}>Today's Habits</Text>
+        </View>
+        
+        <View style={styles.statCard}>
+          <View style={styles.statIcon}>
+            <Ionicons name="checkmark-circle-outline" size={24} color="#4F2780" />
+          </View>
+          <Text style={styles.statNumber}>{totalHabitsCount}</Text>
+          <Text style={styles.statLabel}>Total Habits</Text>
+        </View>
+      </View>
+
+      {/* Calendar Section */}
+      <View style={styles.calendarSection}>
+        <Text style={styles.sectionTitle}>📅 Your Progress Calendar</Text>
+        <View style={styles.calendarContainer}>
+          <Calendar
+            onDayPress={onDayPress}
+            markedDates={{
+              ...markedDates,
+              [selectedDate]: {
+                selected: true,
+                selectedColor: "#4F2780",
+                dots: markedDates[selectedDate]?.dots || [],
+              },
+              [new Date().toISOString().split("T")[0]]: {
+                ...(markedDates[new Date().toISOString().split("T")[0]] || {}),
+                today: true,
+                selected: true,
+                selectedColor: "#FFD700",
+                dots: markedDates[new Date().toISOString().split("T")[0]]?.dots || [],
+              },
+            }}
+            markingType={"multi-dot"}
+            style={styles.calendar}
+            theme={{
+              selectedDayBackgroundColor: "#4F2780",
+              todayTextColor: "#FF6347",
+              arrowColor: "#4F2780",
+              backgroundColor: 'rgba(255,255,255,0.9)',
+              calendarBackground: 'rgba(255,255,255,0.9)',
+              textSectionTitleColor: '#4F2780',
+              dayTextColor: '#333',
+              textDisabledColor: '#ccc',
+              monthTextColor: '#4F2780',
+              indicatorColor: '#4F2780',
+              textDayFontWeight: '600',
+              textMonthFontWeight: 'bold',
+              textDayHeaderFontWeight: '600',
+            }}
+          />
+        </View>
+      </View>
       <Modal
         animationType="slide"
         transparent={true}
@@ -208,86 +282,253 @@ const HomeScreen = () => {
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
         <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Habits for {selectedDate}</Text>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>📋 Habits for {selectedDate}</Text>
+            <TouchableOpacity onPress={closeModal} style={styles.closeIconButton}>
+              <Ionicons name="close" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          
           {habitsForSelectedDate.length > 0 ? (
             <FlatList
               data={habitsForSelectedDate}
               keyExtractor={(item) => item.id}
               renderItem={renderHabit}
               contentContainerStyle={styles.habitList}
+              showsVerticalScrollIndicator={false}
             />
           ) : (
-            <Text style={styles.noHabitsText}>No habits for this date.</Text>
+            <View style={styles.emptyState}>
+              <Ionicons name="calendar-outline" size={48} color="#ccc" />
+              <Text style={styles.noHabitsText}>No habits for this date</Text>
+              <Text style={styles.noHabitsSubtext}>Tap on a day with habits to see details</Text>
+            </View>
           )}
-          <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingTop: 50,
+    backgroundColor: 'transparent',
   },
   header: {
-    width: '100%',
+    backgroundColor: 'rgba(79, 39, 128, 0.9)',
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  headerContent: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  greeting: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '500',
+  },
+  userName: {
+    fontSize: 24,
+    color: '#fff',
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  logoutButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    padding: 12,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginTop: -15,
+    marginBottom: 20,
+    gap: 15,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(79, 39, 128, 0.1)',
+  },
+  statIcon: {
+    backgroundColor: 'rgba(79, 39, 128, 0.1)',
+    padding: 12,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+  statNumber: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#4F2780',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  calendarSection: {
+    paddingHorizontal: 20,
     marginBottom: 20,
   },
-  title: {
-    fontSize: 28,
-    color: '#567396',
+  sectionTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#4F2780',
+    marginBottom: 15,
+    textAlign: 'center',
   },
-  logoutButton: { padding: 10 },
-  calendar: { width: "80%", borderRadius: 10, marginBottom: 20 },
-  modalOverlay: { flex: 1, backgroundColor: "#000000aa" },
+  calendarContainer: {
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  calendar: {
+    borderRadius: 15,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
   modalContainer: {
     position: "absolute",
     bottom: 0,
     width: "100%",
-    maxHeight: "60%",
+    maxHeight: "70%",
     backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   modalTitle: {
-    fontSize: 24,
-    color: "#567396",
-    marginBottom: 15,
-    textAlign: "center",
+    fontSize: 20,
+    color: "#4F2780",
     fontWeight: "bold",
+    flex: 1,
   },
-  habitList: { paddingBottom: 20 },
-  habitItem: {
-    padding: 15,
-    backgroundColor: "#F0F8FF",
-    borderRadius: 10,
-    marginBottom: 10,
+  closeIconButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
   },
-  habitText: { fontSize: 18, color: "#333" },
-  habitDetail: { fontSize: 16, color: "#555", marginTop: 5 },
-  noHabitsText: { fontSize: 16, color: "#666", textAlign: "center", marginBottom: 20 },
-  closeButton: {
-    backgroundColor: "#007BFF",
-    paddingVertical: 12,
-    borderRadius: 25,
+  habitList: {
+    paddingBottom: 20,
+  },
+  habitCard: {
+    backgroundColor: "#f8f9ff",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(79, 39, 128, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  habitHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  habitEmoji: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  habitInfo: {
+    flex: 1,
+  },
+  habitTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: "#4F2780",
+    marginBottom: 4,
+  },
+  habitTime: {
+    fontSize: 14,
+    color: "#666",
+  },
+  habitDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  habitDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  habitDetailText: {
+    fontSize: 12,
+    color: "#666",
+    marginLeft: 6,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  noHabitsText: {
+    fontSize: 18,
+    color: "#666",
+    textAlign: "center",
+    marginTop: 16,
+    fontWeight: '600',
+  },
+  noHabitsSubtext: {
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
+    marginTop: 8,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 15,
   },
-  closeButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  errorText: { fontSize: 18, color: "#ff0000", textAlign: "center" },
+  errorText: {
+    fontSize: 18,
+    color: "#ff0000",
+    textAlign: "center",
+  },
 });
 
 export default withGradient(HomeScreen);

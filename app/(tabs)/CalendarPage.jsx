@@ -1,19 +1,21 @@
 // src/tabs/CalendarPage.jsx
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { useNavigation } from '@react-navigation/native';
-import { db, auth } from '../../config/firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
 import withGradient from '../../components/withGradient';
+import { auth, db } from '../../config/firebase';
 
 const CalendarPage = () => {
   const navigation = useNavigation();
@@ -62,7 +64,7 @@ const CalendarPage = () => {
   };
 
   const onDayPress = (day) => {
-    navigation.navigate('HabitAddPage', { date: day.dateString });
+    navigation.getParent()?.navigate('HabitAddPage', { date: day.dateString });
   };
 
   if (loading || loadingHabits) {
@@ -82,76 +84,220 @@ const CalendarPage = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Calendar</Text>
-      <Calendar
-        onDayPress={onDayPress}
-        markedDates={{
-          ...markedDates,
-          [new Date().toISOString().split('T')[0]]: {
-            ...(markedDates[new Date().toISOString().split('T')[0]] || {}),
-            today: true,
-            marked: true,
-            dotColor: '#FFD700', // Gold color for today
-          },
-        }}
-        markingType={'multi-dot'}
-        style={styles.calendar}
-        theme={{
-          selectedDayBackgroundColor: '#007BFF',
-          todayTextColor: '#FF6347',
-          arrowColor: '#007BFF',
-        }}
-      />
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate('HabitAddPage')}
-      >
-        <Text style={styles.addButtonText}>Add New Habit</Text>
-      </TouchableOpacity>
-    </View>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <Text style={styles.title}>📅 Calendar</Text>
+        <Text style={styles.subtitle}>Track your habits and progress</Text>
+      </View>
+
+      {/* Calendar Section */}
+      <View style={styles.calendarSection}>
+        <View style={styles.calendarContainer}>
+          <Calendar
+            onDayPress={onDayPress}
+            markedDates={{
+              ...markedDates,
+              [new Date().toISOString().split('T')[0]]: {
+                ...(markedDates[new Date().toISOString().split('T')[0]] || {}),
+                today: true,
+                marked: true,
+                dotColor: '#FFD700', // Gold color for today
+              },
+            }}
+            markingType={'multi-dot'}
+            style={styles.calendar}
+            theme={{
+              selectedDayBackgroundColor: '#4F2780',
+              todayTextColor: '#FF6347',
+              arrowColor: '#4F2780',
+              backgroundColor: 'rgba(255,255,255,0.9)',
+              calendarBackground: 'rgba(255,255,255,0.9)',
+              textSectionTitleColor: '#4F2780',
+              dayTextColor: '#333',
+              textDisabledColor: '#ccc',
+              monthTextColor: '#4F2780',
+              indicatorColor: '#4F2780',
+              textDayFontWeight: '600',
+              textMonthFontWeight: 'bold',
+              textDayHeaderFontWeight: '600',
+            }}
+          />
+        </View>
+      </View>
+
+      {/* Action Buttons */}
+      <View style={styles.actionSection}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => navigation.getParent()?.navigate('HabitAddPage')}
+        >
+          <Ionicons name="add-circle" size={24} color="#fff" />
+          <Text style={styles.addButtonText}>Add New Habit</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.quickAddButton}
+          onPress={() => navigation.getParent()?.navigate('HabitAddPage', { date: new Date().toISOString().split('T')[0] })}
+        >
+          <Ionicons name="today" size={20} color="#4F2780" />
+          <Text style={styles.quickAddButtonText}>Add for Today</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Legend */}
+      <View style={styles.legendSection}>
+        <Text style={styles.legendTitle}>Legend</Text>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: '#007BFF' }]} />
+          <Text style={styles.legendText}>Habits completed</Text>
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: '#FFD700' }]} />
+          <Text style={styles.legendText}>Today</Text>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  header: {
+    backgroundColor: 'rgba(79, 39, 128, 0.9)',
     paddingTop: 50,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 32,
+    color: '#fff',
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '500',
+  },
+  calendarSection: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  calendarContainer: {
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  calendar: {
+    borderRadius: 15,
+  },
+  actionSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    gap: 12,
+  },
+  addButton: {
+    backgroundColor: '#4F2780',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  quickAddButton: {
+    backgroundColor: 'rgba(79, 39, 128, 0.1)',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(79, 39, 128, 0.3)',
+  },
+  quickAddButtonText: {
+    color: '#4F2780',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  legendSection: {
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    marginHorizontal: 20,
+    marginBottom: 30,
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  legendTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4F2780',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  legendDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  legendText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
   },
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    fontSize: 28,
-    color: '#567396',
-    marginBottom: 20,
-    fontWeight: 'bold',
-  },
-  calendar: {
-    width: '100%',
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  addButton: {
-    backgroundColor: '#28a745',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    alignItems: 'center',
-    width: '60%',
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   errorText: {
     color: 'red',
     fontSize: 18,
+    textAlign: 'center',
   },
 });
 

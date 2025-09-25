@@ -181,7 +181,21 @@ export default function StackLayout() {
    
 
       {/* Habit Add Page */}
-      <Stack.Screen name="HabitAddPage" component={HabitAddPage} />
+      <Stack.Screen 
+        name="HabitAddPage" 
+        component={HabitAddPage}
+        options={{
+          headerShown: true,
+          title: 'Add Habit',
+          headerStyle: {
+            backgroundColor: '#4F2780',
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
     
       {/* New Pages */}
       <Stack.Screen name="GratitudeList" component={GratitudeList} />

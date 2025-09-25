@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, FlatList, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const affirmations = [
   "I have the strength to overcome any challenge I face.",
@@ -15,70 +15,143 @@ const affirmations = [
   "My resilience is my superpower.",
 ];
 
-const screenWidth = Dimensions.get('window').width;
-
 export default function AboutPage() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [currentAffirmationIndex, setCurrentAffirmationIndex] = useState(0);
+
+  const nextAffirmation = () => {
+    setCurrentAffirmationIndex((prev) => (prev + 1) % affirmations.length);
+  };
+
+  const previousAffirmation = () => {
+    setCurrentAffirmationIndex((prev) => (prev - 1 + affirmations.length) % affirmations.length);
+  };
 
   return (
     <LinearGradient colors={['#4F2780', '#D3C5E5']} style={styles.gradient}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.heading}>About WellNest</Text>
-          <Text style={styles.text}>
-            WellNest aims to create a safe, compassionate, and intelligent space for caregivers to nurture their own mental health. By combining ethical AI, guided self-reflection, and professional psychological resources, we strive to offer caregivers the recognition and care they deserve—because supporting others shouldn’t come at the cost of your own well-being.{"\n"}
-            Whether you're caring for a loved one, a patient, or someone in need, WellNest is your space to recharge, reflect, and find strength. Because your well-being matters, too.
-          </Text>
-
-          <Text style={styles.subHeading}>Key Features</Text>
-          <View style={styles.featureList}>
-            <Text style={styles.featureItem}>🎯 Habit tracking to keep you on top of your goals</Text>
-            <Text style={styles.featureItem}>🌟 Daily gratitude lists to focus on positivity</Text>
-            <Text style={styles.featureItem}>📝 Free journaling and guided reflection exercises</Text>
-            <Text style={styles.featureItem}>🎥 Expert videos to inspire and educate</Text>
-            <Text style={styles.featureItem}>📅 A user-friendly calendar for better planning</Text>
-            <Text style={styles.featureItem}>📊 Progress Tracking: Users can log their daily moods by selecting how they feel, with the option to track emotions using emojis for a quick and visual overview.</Text>
-            <Text style={styles.featureItem}>👥 Community-driven forum: AI-powered sentiment analysis detects caregiver burnout and delivers personalized support recommendations</Text>
+          <View style={styles.headerContainer}>
+            <Text style={styles.heading}>About WellNest</Text>
+            <View style={styles.divider} />
+          </View>
+          
+          <View style={styles.descriptionCard}>
+            <Text style={styles.descriptionText}>
+              WellNest aims to create a safe, compassionate, and intelligent space for caregivers to nurture their own mental health. By combining ethical AI, guided self-reflection, and professional psychological resources, we strive to offer caregivers the recognition and care they deserve—because supporting others shouldn't come at the cost of your own well-being.
+            </Text>
+            <Text style={styles.descriptionText}>
+              Whether you're caring for a loved one, a patient, or someone in need, WellNest is your space to recharge, reflect, and find strength. Because your well-being matters, too.
+            </Text>
           </View>
 
-          <Text style={styles.subHeading}>Our Mission</Text>
-          <Text style={styles.text}>
-            We believe that small, consistent actions can lead to significant life changes. Our mission
-            is to empower individuals by providing tools and resources to create positive habits and 
-            foster personal growth.
-          </Text>
-
-          <Text style={styles.subHeading}>Contact Us</Text>
-          <Text style={styles.text}>
-            If you have any questions, feedback, or suggestions, feel free to reach out to us at:{"\n"}
-            <Text style={styles.email}>support@yourapp.com</Text>
-          </Text>
-
-          <Text style={styles.subHeading}>Positive Affirmations for Resilience</Text>
-          <FlatList
-            data={affirmations}
-            keyExtractor={(item, index) => index.toString()}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <View style={styles.affirmationCard}>
-                
-                <Text style={styles.affirmationText}>{item}</Text>
+          <View style={styles.sectionContainer}>
+            <Text style={styles.subHeading}>✨ Key Features</Text>
+            <View style={styles.featuresGrid}>
+              <View style={styles.featureCard}>
+                <Text style={styles.featureIcon}>🎯</Text>
+                <Text style={styles.featureTitle}>Habit Tracking</Text>
+                <Text style={styles.featureDescription}>Keep you on top of your goals</Text>
               </View>
-            )}
-            onScroll={(e) => {
-              const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
-              setActiveIndex(index);
-            }}
-          />
-          <View style={styles.dotContainer}>
-            {affirmations.map((_, i) => (
-              <View
-                key={i}
-                style={[styles.dot, i === activeIndex ? styles.activeDot : null]}
-              />
-            ))}
+              
+              <View style={styles.featureCard}>
+                <Text style={styles.featureIcon}>🌟</Text>
+                <Text style={styles.featureTitle}>Daily Gratitude</Text>
+                <Text style={styles.featureDescription}>Focus on positivity</Text>
+              </View>
+              
+              <View style={styles.featureCard}>
+                <Text style={styles.featureIcon}>📝</Text>
+                <Text style={styles.featureTitle}>Free Journaling</Text>
+                <Text style={styles.featureDescription}>Guided reflection exercises</Text>
+              </View>
+              
+              <View style={styles.featureCard}>
+                <Text style={styles.featureIcon}>🎥</Text>
+                <Text style={styles.featureTitle}>Expert Videos</Text>
+                <Text style={styles.featureDescription}>Inspire and educate</Text>
+              </View>
+              
+              <View style={styles.featureCard}>
+                <Text style={styles.featureIcon}>📅</Text>
+                <Text style={styles.featureTitle}>Smart Calendar</Text>
+                <Text style={styles.featureDescription}>Better planning made easy</Text>
+              </View>
+              
+              <View style={styles.featureCard}>
+                <Text style={styles.featureIcon}>📊</Text>
+                <Text style={styles.featureTitle}>Progress Tracking</Text>
+                <Text style={styles.featureDescription}>Visual mood tracking with emojis</Text>
+              </View>
+              
+              <View style={styles.featureCard}>
+                <Text style={styles.featureIcon}>👥</Text>
+                <Text style={styles.featureTitle}>Community Forum</Text>
+                <Text style={styles.featureDescription}>AI-powered support recommendations</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.sectionContainer}>
+            <Text style={styles.subHeading}>🎯 Our Mission</Text>
+            <View style={styles.missionCard}>
+              <Text style={styles.missionText}>
+                We believe that small, consistent actions can lead to significant life changes. Our mission
+                is to empower individuals by providing tools and resources to create positive habits and 
+                foster personal growth.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.sectionContainer}>
+            <Text style={styles.subHeading}>📞 Contact Us</Text>
+            <View style={styles.contactCard}>
+              <Text style={styles.contactText}>
+                If you have any questions, feedback, or suggestions, feel free to reach out to us at:
+              </Text>
+              <Text style={styles.email}>lasyap.08@gmail.com</Text>
+            </View>
+          </View>
+
+          <View style={styles.sectionContainer}>
+            <Text style={styles.subHeading}>💫 Positive Affirmations for Resilience</Text>
+            <Text style={styles.instructionText}>
+              Tap the affirmation below to reveal the next one. Take a moment to reflect on each message.
+            </Text>
+          </View>
+          
+          <View style={styles.affirmationContainer}>
+            <TouchableOpacity 
+              style={styles.affirmationCard} 
+              onPress={nextAffirmation}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.affirmationText}>
+                {affirmations[currentAffirmationIndex]}
+              </Text>
+              <Text style={styles.tapHint}>Tap to continue</Text>
+            </TouchableOpacity>
+            
+            <View style={styles.navigationContainer}>
+              <TouchableOpacity 
+                style={styles.navButton} 
+                onPress={previousAffirmation}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.navButtonText}>← Previous</Text>
+              </TouchableOpacity>
+              
+              <Text style={styles.counterText}>
+                {currentAffirmationIndex + 1} of {affirmations.length}
+              </Text>
+              
+              <TouchableOpacity 
+                style={styles.navButton} 
+                onPress={nextAffirmation}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.navButtonText}>Next →</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -97,75 +170,234 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
+  headerContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+    marginTop: 20,
+  },
   heading: {
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 15,
     color: '#fff',
-    marginTop: 50,
+    marginBottom: 15,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  divider: {
+    width: 60,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    borderRadius: 2,
+  },
+  descriptionCard: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  descriptionText: {
+    fontSize: 16,
+    lineHeight: 26,
+    textAlign: 'center',
+    color: '#fff',
+    marginBottom: 16,
+    fontWeight: '400',
+  },
+  sectionContainer: {
+    width: '100%',
+    marginBottom: 30,
   },
   subHeading: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
     textAlign: 'center',
     color: '#fff',
+    marginBottom: 20,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-  text: {
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  featureCard: {
+    width: '48%',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 12,
+  },
+  featureIcon: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  featureTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  featureDescription: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  missionCard: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  missionText: {
+    fontSize: 16,
+    lineHeight: 26,
+    textAlign: 'center',
+    color: '#fff',
+    fontWeight: '400',
+  },
+  contactCard: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  contactText: {
     fontSize: 16,
     lineHeight: 24,
     textAlign: 'center',
-    marginBottom: 10,
     color: '#fff',
-  },
-  featureList: {
-    alignItems: 'flex-start',
-    marginLeft: 20,
-    marginBottom: 10,
-  },
-  featureItem: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#fff',
+    marginBottom: 12,
   },
   email: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'center',
     textDecorationLine: 'underline',
     color: '#fff',
+    fontWeight: 'bold',
+  },
+  instructionText: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+    marginBottom: 20,
+    fontStyle: 'italic',
+    paddingHorizontal: 20,
+  },
+  affirmationContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
+    paddingHorizontal: 20,
   },
   affirmationCard: {
-    width: screenWidth - 60,
-    padding: 20,
-    marginHorizontal: 10,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 16,
+    width: '100%',
+    maxWidth: 400,
+    minHeight: 160,
+    padding: 28,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.4)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+    marginBottom: 24,
   },
   affirmationText: {
-    fontSize: 18,
+    fontSize: 20,
     fontStyle: 'italic',
     color: '#fff',
     textAlign: 'center',
+    lineHeight: 28,
+    fontWeight: '600',
+    marginBottom: 16,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-  dotContainer: {
+  tapHint: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+    fontStyle: 'normal',
+    fontWeight: '500',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  navigationContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 40,
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 300,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#bbb',
-    marginHorizontal: 4,
+  navButton: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  activeDot: {
-    backgroundColor: '#fff',
+  navButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  counterText: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 15,
+    fontWeight: '600',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
   },
 });
