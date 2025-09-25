@@ -1,32 +1,37 @@
 // src/navigation/StackLayout.jsx
-import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from './HomeScreen';
-import CalendarPage from './CalendarPage';
-import VideosPage from './VideosPage'; // Existing Videos Page
-import JournalPage from './JournalPage'; // Journal Page
-import ExpertVideosPage from './ExpertVideosPage'; // New Expert Videos Page
-import AboutPage from './AboutPage'; // New About Page
-import RegisterScreen from './index';
-import LoginScreen from './Login';
-import HabitAddPage from './HabitAddPage'; // Habit Add Page
-import ForumPage from './ForumPage'; // Add this import at the top
-import GratitudeList from './GratitudeList'; // New Gratitude List Page
-import TodaysGoals from './TodaysGoals'; // New Today's Goals Page
-import DailyReflection from './DailyReflection'; // New Daily Reflection Page
-import FreeJournaling from './FreeJournaling'; // New Free Journaling Page
-import ABCDEMethod from './ABCDEMethod'; // New ABCDE Method Page
-import CreatePost from './CreatePost'; // New Create Post Page
-import PostDetail from './PostDetail'; // New Post Detail Page
-import JournalEntries from './JournalEntries';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { useNavigation } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { signOut } from 'firebase/auth';
+import React, { useState } from 'react';
+import { Alert } from 'react-native';
+import ConfirmationModal from '../../components/ConfirmationModal';
+import { auth } from "../../config/firebase";
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from '../../hooks/useColorScheme';
-import { Ionicons } from '@expo/vector-icons';
+import ABCDEMethod from './ABCDEMethod'; // New ABCDE Method Page
+import AboutPage from './AboutPage'; // New About Page
+import CalendarPage from './CalendarPage';
+import CreatePost from './CreatePost'; // New Create Post Page
+import DailyReflection from './DailyReflection'; // New Daily Reflection Page
+import ExpertVideosPage from './ExpertVideosPage'; // New Expert Videos Page
+import ForumPage from './ForumPage'; // Add this import at the top
+import FreeJournaling from './FreeJournaling'; // New Free Journaling Page
+import GratitudeList from './GratitudeList'; // New Gratitude List Page
+import HabitAddPage from './HabitAddPage'; // Habit Add Page
+import HomeScreen from './HomeScreen';
+import RegisterScreen from './index';
+import JournalEntries from './JournalEntries';
+import JournalPage from './JournalPage'; // Journal Page
+import LoginScreen from './Login';
+import PostDetail from './PostDetail'; // New Post Detail Page
+import TodaysGoals from './TodaysGoals'; // New Today's Goals Page
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
-
+const Drawer = createDrawerNavigator();
 // Bottom Tab Navigator Component
 const BottomTabs = () => {
   const colorScheme = useColorScheme();
@@ -95,6 +100,69 @@ const BottomTabs = () => {
   );
 };
 
+// Drawer Navigator Component
+const DrawerNavigator = () => {
+  const navigation = useNavigation();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    signOut(auth)
+      .then(() => {
+        navigation.replace("Login");
+      })
+      .catch((err) => {
+        console.error("Logout Error:", err);
+        Alert.alert("Error", "Failed to logout. Please try again.");
+      });
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
+
+  return (
+    <>
+      <Drawer.Navigator initialRouteName="MainTabs">
+        <Drawer.Screen name="MainTabs" component={BottomTabs} options={{ title: 'Home' }} />
+        
+        <Drawer.Screen
+          name="Logout"
+          component={BottomTabs}
+          options={{
+            title: 'Logout',
+            drawerIcon: ({ color, size }) => (
+              <Ionicons name="log-out-outline" size={size} color={color} />
+            ),
+          }}
+          listeners={{
+            drawerItemPress: (e) => {
+              e.preventDefault();
+              handleLogout();
+            },
+          }}
+        />
+      </Drawer.Navigator>
+      
+      <ConfirmationModal
+        visible={showLogoutModal}
+        onClose={cancelLogout}
+        onConfirm={confirmLogout}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        confirmText="Logout"
+        cancelText="Cancel"
+        confirmButtonColor="#ff4444"
+        iconName="log-out-outline"
+      />
+    </>
+  );
+};
+
 // Stack Navigator Component
 export default function StackLayout() {
   const colorScheme = useColorScheme();
@@ -109,13 +177,12 @@ export default function StackLayout() {
       {/* Authentication Screens */}
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-
-      {/* Main App Tabs */}
-      <Stack.Screen name="MainTabs" component={BottomTabs} />
+      <Stack.Screen name="Drawer" component={DrawerNavigator} />
+   
 
       {/* Habit Add Page */}
       <Stack.Screen name="HabitAddPage" component={HabitAddPage} />
-
+    
       {/* New Pages */}
       <Stack.Screen name="GratitudeList" component={GratitudeList} />
       <Stack.Screen name="TodaysGoals" component={TodaysGoals} />

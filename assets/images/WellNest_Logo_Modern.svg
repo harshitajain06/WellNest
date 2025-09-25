@@ -1,0 +1,49 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <defs>
+    <linearGradient id="background" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498DB;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2980B9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1F4E79;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="nest" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F39C12;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E67E22;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="heart" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E74C3C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C0392B;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="leaves" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#27AE60;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#229954;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main Background Circle -->
+  <circle cx="100" cy="100" r="90" fill="url(#background)" stroke="#2C3E50" stroke-width="4"/>
+  
+  <!-- Nest/Bowl Shape (care and nurturing) -->
+  <path d="M 60 130 Q 100 90 140 130 Q 100 160 60 130 Z" fill="url(#nest)" stroke="#D35400" stroke-width="3"/>
+  
+  <!-- Nest Texture Lines -->
+  <path d="M 70 140 Q 100 110 130 140" stroke="#D35400" stroke-width="2" fill="none" opacity="0.8"/>
+  <path d="M 75 145 Q 100 120 125 145" stroke="#D35400" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M 80 150 Q 100 130 120 150" stroke="#D35400" stroke-width="1" fill="none" opacity="0.4"/>
+  
+  <!-- Heart Symbol (care and love) -->
+  <path d="M 100 70 C 95 60, 85 60, 85 75 C 85 60, 70 60, 70 75 C 70 95, 100 120, 100 120 C 100 120, 130 95, 130 75 C 130 60, 115 60, 115 75 C 115 60, 105 60, 100 70 Z" 
+        fill="url(#heart)" stroke="#A93226" stroke-width="2"/>
+  
+  <!-- Growth Leaves (wellness and growth) -->
+  <path d="M 100 50 L 85 70 L 90 65 L 100 50 L 110 65 L 115 70 Z" fill="url(#leaves)" stroke="#1E8449" stroke-width="2"/>
+  <path d="M 100 50 L 80 75 L 85 70 L 100 50 L 115 70 L 120 75 Z" fill="url(#leaves)" stroke="#1E8449" stroke-width="2" opacity="0.8"/>
+  <path d="M 100 50 L 90 60 L 95 55 L 100 50 L 105 55 L 110 60 Z" fill="url(#leaves)" stroke="#1E8449" stroke-width="1.5" opacity="0.6"/>
+  
+  <!-- Support Dots (community) -->
+  <circle cx="75" cy="80" r="3" fill="#F39C12" opacity="0.9"/>
+  <circle cx="125" cy="80" r="3" fill="#F39C12" opacity="0.9"/>
+  <circle cx="100" cy="60" r="2.5" fill="#27AE60" opacity="0.8"/>
+  <circle cx="85" cy="100" r="2" fill="#E74C3C" opacity="0.7"/>
+  <circle cx="115" cy="100" r="2" fill="#E74C3C" opacity="0.7"/>
+</svg>
