@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, Pressable } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../config/firebase'; // Adjust the import path
-import WebView from 'react-native-webview'; // Install if not already installed\
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, Modal, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import WebView from 'react-native-webview'; // For mobile platforms
 import withGradient from '../../components/withGradient';
+import { db } from '../../config/firebase'; // Adjust the import path
 
 const ExpertVideosPage = () => {
   const [videos, setVideos] = useState([]);
@@ -38,6 +38,25 @@ const ExpertVideosPage = () => {
     setModalVisible(false);
   };
 
+  // Function to convert YouTube URL to embed format
+  const getEmbedUrl = (url) => {
+    if (!url) return '';
+    
+    // Check if it's already an embed URL
+    if (url.includes('embed')) return url;
+    
+    // Extract video ID from various YouTube URL formats
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}`;
+    }
+    
+    // If it's not a YouTube URL, return as is (for other video platforms)
+    return url;
+  };
+
   const renderVideoItem = ({ item }) => (
     <TouchableOpacity style={styles.videoContainer} onPress={() => openVideo(item.videoUrl)}>
       <Image source={{ uri: item.thumbnailUrl }} style={styles.thumbnail} />
@@ -68,11 +87,24 @@ const ExpertVideosPage = () => {
       >
         <View style={styles.modalContainer}>
           {selectedVideoUrl && (
-            <WebView
-              source={{ uri: selectedVideoUrl }}
-              style={{ flex: 1 }}
-              allowsFullscreenVideo={true}
-            />
+            <>
+              {Platform.OS === 'web' ? (
+                <iframe
+                  src={getEmbedUrl(selectedVideoUrl)}
+                  style={styles.webVideo}
+                  allowFullScreen
+                  title="Expert Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              ) : (
+                <WebView
+                  source={{ uri: selectedVideoUrl }}
+                  style={{ flex: 1 }}
+                  allowsFullscreenVideo={true}
+                />
+              )}
+            </>
           )}
           <Pressable style={styles.closeButton} onPress={closeModal}>
             <Text style={styles.closeButtonText}>Close</Text>
@@ -143,6 +175,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  webVideo: {
+    width: '100%',
+    height: '100%',
+    border: 'none',
+    borderRadius: '8px',
   },
 });
 
