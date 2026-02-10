@@ -102,6 +102,13 @@ const RegisterScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Handle Enter key press for web
+  const handleKeyPress = (event) => {
+    if (isWeb && event.key === 'Enter') {
+      handleSignUp();
+    }
+  };
+
   const handleSignUp = async () => {
     if (!validateForm()) {
       return;
@@ -171,7 +178,14 @@ const RegisterScreen = () => {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView 
+        contentContainerStyle={styles.container} 
+        keyboardShouldPersistTaps="handled"
+        {...(isWeb && {
+          style: { minHeight: '100vh' },
+          onKeyPress: handleKeyPress,
+        })}
+      >
         <WellNestLogo size={isWeb ? 120 : 140} showText={false} style={styles.logoContainer} />
         <Text style={styles.title}>Sign Up</Text>
 
@@ -198,6 +212,10 @@ const RegisterScreen = () => {
             autoCapitalize="words"
             returnKeyType="next"
             editable={!isLoading}
+            {...(isWeb && {
+              autoComplete: 'name',
+              inputMode: 'text',
+            })}
           />
           {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
         </View>
@@ -226,6 +244,10 @@ const RegisterScreen = () => {
             autoCapitalize="none"
             returnKeyType="next"
             editable={!isLoading}
+            {...(isWeb && {
+              autoComplete: 'email',
+              inputMode: 'email',
+            })}
           />
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
         </View>
@@ -253,6 +275,10 @@ const RegisterScreen = () => {
             onBlur={() => setIsFocused(null)}
             returnKeyType="next"
             editable={!isLoading}
+            {...(isWeb && {
+              autoComplete: 'new-password',
+              inputMode: 'text',
+            })}
           />
           {password.length > 0 && (
             <View style={styles.passwordStrengthContainer}>
@@ -302,6 +328,10 @@ const RegisterScreen = () => {
             onBlur={() => setIsFocused(null)}
             returnKeyType="done"
             editable={!isLoading}
+            {...(isWeb && {
+              autoComplete: 'new-password',
+              inputMode: 'text',
+            })}
           />
           {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
         </View>
@@ -337,49 +367,56 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: isWeb ? Math.min(width * 0.05, 60) : 20,
-    paddingVertical: isWeb ? 20 : 10,
-    minHeight: isWeb ? height - 20 : undefined,
-    maxWidth: isWeb ? 800 : '100%',
+    paddingHorizontal: isWeb ? Math.min(width * 0.05, 60) : width < 375 ? 16 : 24,
+    paddingVertical: isWeb ? 40 : height < 700 ? 16 : 24,
+    minHeight: isWeb ? '100vh' : undefined,
+    maxWidth: isWeb ? 600 : '100%',
+    width: '100%',
     alignSelf: 'center',
-    borderWidth: 0.5,
+    borderWidth: isWeb ? 0.5 : 0,
     borderColor: '#ffffff',
-    borderRadius: 20,
-    margin: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderRadius: isWeb ? 20 : 0,
+    margin: isWeb ? '20px auto' : 0,
+    backgroundColor: isWeb ? 'rgba(255, 255, 255, 0.25)' : 'transparent',
     shadowColor: '#1e3c72',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: isWeb ? 0.3 : 0,
     shadowRadius: 16,
-    elevation: 10,
+    elevation: isWeb ? 10 : 0,
+    ...(isWeb && {
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      boxShadow: '0 8px 32px rgba(30, 60, 114, 0.3)',
+    }),
   },
   logoContainer: {
-    marginBottom: 10,
- 
+    marginBottom: isWeb ? 20 : height < 700 ? 12 : 18,
+    marginTop: isWeb ? 0 : height < 700 ? 0 : 8,
   },
   title: {
-    fontSize: isWeb ? 32 : 36,
+    fontSize: isWeb ? 32 : height < 700 ? 28 : 34,
     fontWeight: 'bold',
     color: '#1a1a1a',
-    marginBottom: 15,
+    marginBottom: isWeb ? 24 : height < 700 ? 14 : 18,
     textAlign: 'center',
     textShadowColor: 'rgba(255, 255, 255, 0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+    letterSpacing: 0.5,
   },
   inputContainer: {
     width: '100%',
-    marginBottom: 10,
+    marginBottom: isWeb ? 14 : height < 700 ? 10 : 12,
   },
   input: {
     width: '100%',
-    height: 50,
+    height: isWeb ? 52 : height < 700 ? 48 : 52,
     borderWidth: 0.5,
-    borderRadius: 15,
-    paddingHorizontal: 20,
+    borderRadius: 16,
+    paddingHorizontal: isWeb ? 20 : 18,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     color: '#1a1a1a',
-    fontSize: 16,
+    fontSize: isWeb ? 16 : height < 700 ? 15 : 16,
     fontWeight: '500',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -389,31 +426,37 @@ const styles = StyleSheet.create({
     ...(isWeb && {
       outlineStyle: 'none',
       transition: 'all 0.3s ease',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      '&:focus': {
+        transform: 'translateY(-1px)',
+        boxShadow: '0 4px 12px rgba(74, 144, 226, 0.3)',
+      },
     }),
   },
   errorText: {
     color: '#E74C3C',
-    fontSize: 12,
-    marginTop: 5,
-    marginLeft: 5,
+    fontSize: isWeb ? 12 : 11,
+    marginTop: 6,
+    marginLeft: 6,
     fontWeight: '600',
   },
   passwordStrengthContainer: {
-    marginTop: 6,
-    marginBottom: 3,
+    marginTop: 8,
+    marginBottom: 4,
+    paddingHorizontal: 2,
   },
   passwordStrengthText: {
-    fontSize: 12,
+    fontSize: isWeb ? 12 : 11,
     color: '#7F8C8D',
-    marginBottom: 4,
+    marginBottom: 6,
     fontWeight: '500',
   },
   strengthBar: {
-    height: 6,
+    height: isWeb ? 6 : 5,
     backgroundColor: '#ECF0F1',
     borderRadius: 3,
     overflow: 'hidden',
-    marginBottom: 4,
+    marginBottom: 6,
     borderWidth: 0.5,
     borderColor: '#BDC3C7',
   },
@@ -423,26 +466,30 @@ const styles = StyleSheet.create({
     transition: 'all 0.3s ease',
   },
   strengthText: {
-    fontSize: 11,
+    fontSize: isWeb ? 11 : 10,
     fontWeight: '600',
+    textAlign: 'right',
   },
   buttonContainer: {
     width: '100%',
-    padding: isWeb ? 20 : 20,
+    paddingTop: isWeb ? 20 : height < 700 ? 6 : 10,
+    paddingHorizontal: 0,
   },
   button: {
     backgroundColor: '#2a5298',
-    paddingVertical: 15,
+    paddingVertical: isWeb ? 16 : height < 700 ? 14 : 16,
     borderRadius: 30,
     alignItems: 'center',
-    marginBottom: 10,
+    justifyContent: 'center',
+    marginBottom: isWeb ? 16 : 12,
     shadowColor: '#1e3c72',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
     borderWidth: 0.5,
     borderColor: '#1e3c72',
+    minHeight: isWeb ? 50 : height < 700 ? 46 : 50,
     ...(isWeb && {
       cursor: 'pointer',
       transition: 'all 0.3s ease',
@@ -461,26 +508,28 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: isWeb ? 18 : height < 700 ? 16 : 18,
     fontWeight: 'bold',
     textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+    letterSpacing: 0.5,
   },
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: isWeb ? 12 : 8,
+    paddingVertical: 8,
   },
   loginText: {
     color: '#1a1a1a',
-    fontSize: 16,
+    fontSize: isWeb ? 15 : height < 700 ? 14 : 15,
     fontWeight: '500',
   },
   loginLink: {
     color: '#4a90e2',
-    fontSize: 16,
+    fontSize: isWeb ? 15 : height < 700 ? 14 : 15,
     fontWeight: 'bold',
     ...(isWeb && {
       cursor: 'pointer',

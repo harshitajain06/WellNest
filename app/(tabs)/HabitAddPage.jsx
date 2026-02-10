@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { addDoc, collection } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -22,17 +22,29 @@ import {
 import withGradient from '../../components/withGradient';
 import { auth, db } from '../../config/firebase';
 
-// Configure notification behavior
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
-
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
+
+// Check if we're running in Expo Go or in a standalone/dev build
+const isExpoGo = Constants.appOwnership === 'expo';
+
+// Conditionally import and configure notifications only if not in Expo Go
+let Notifications = null;
+if (!isExpoGo && !isWeb) {
+  try {
+    Notifications = require('expo-notifications');
+    // Configure notification behavior
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+  } catch (error) {
+    console.warn('Notifications not available:', error);
+  }
+}
 
 const HabitAddPage = () => {
     const navigation = useNavigation();
@@ -159,29 +171,45 @@ const HabitAddPage = () => {
     };
 
     useEffect(() => {
-        (async () => {
-          const { status } = await Notifications.requestPermissionsAsync();
-          if (status !== 'granted') {
-            Alert.alert('Permission Required', 'Please enable notifications in settings.');
-          }
-        })();
+        if (Notifications) {
+          (async () => {
+            try {
+              const { status } = await Notifications.requestPermissionsAsync();
+              if (status !== 'granted') {
+                console.log('Notification permissions not granted');
+              }
+            } catch (error) {
+              console.warn('Could not request notification permissions:', error);
+            }
+          })();
+        }
       }, []);
 
       const scheduleNotification = async (habitName, notificationTime, repeat) => {
-        const trigger = new Date(notificationTime);
+        if (!Notifications) {
+          console.log('Notifications not available - skipping notification scheduling');
+          return;
+        }
         
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'Habit Reminder',
-            body: `Time to complete your habit: ${habitName} ✅`,
-            sound: 'default',
-          },
-          trigger: {
-            hour: trigger.getHours(),
-            minute: trigger.getMinutes(),
-            repeats: repeat !== 'None',
-          },
-        });
+        try {
+          const trigger = new Date(notificationTime);
+          
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: 'Habit Reminder',
+              body: `Time to complete your habit: ${habitName} ✅`,
+              sound: 'default',
+            },
+            trigger: {
+              hour: trigger.getHours(),
+              minute: trigger.getMinutes(),
+              repeats: repeat !== 'None',
+            },
+          });
+        } catch (error) {
+          console.warn('Could not schedule notification:', error);
+          // Silently fail - don't disrupt the user experience
+        }
       };
 
       const addHabit = async () => {
